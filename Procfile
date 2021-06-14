@@ -1,1 +1,1 @@
-web: scrapyrt -i 0.0.0.0 -p $PORT
+web: sh -c 'cd news && scrapyrt -i 0.0.0.0 -p $PORT'
