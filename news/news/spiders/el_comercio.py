@@ -1,5 +1,5 @@
 import scrapy
-from urllib.parse import urlsplit, urlunsplit
+import w3lib.html
 
 class ElComercioSpider(scrapy.Spider):
   name = "el_comercio"
@@ -16,31 +16,39 @@ class ElComercioSpider(scrapy.Spider):
     'FEED_EXPORT_ENCODING': 'utf-8',
   }
 
-  TITLES = '//h3[@class="list-item__title"]/a/text()'
+  LINKS = '//section[@class="content"]//h3[@class="list-item__title"]/a/@href'
+  TITLE = '//header/h1[@class="entry__title"]/text()'
+  PARAGRAPHS = '//div[@class="entry__content"]//p'
   NEXT_PAGE = '//footer/a[contains(@class, "next")]/@href'
   
   pages_to_scrap = 3
   counter = 0
 
   def parse(self, response):
-    titles = response.xpath(self.TITLES).getall()
-
-    next_link = response.xpath(self.NEXT_PAGE).get()
-    yield response.follow(next_link, callback=self.parse_only_titles, cb_kwargs={'titles': titles})
-
-
-  def parse_only_titles(self, response, **kwargs):
     self.counter += 1
-    if kwargs:
-      titles = kwargs['titles']
 
-    titles.extend(response.xpath(self.TITLES).getall())
+    news_links = response.xpath(self.LINKS).getall()
+
+    for link in news_links:
+      yield response.follow(link, callback=self.parse_full_new, cb_kwargs={ 'url': link })
 
     next_link = response.xpath(self.NEXT_PAGE).get()
-    if self.counter + 1 < self.pages_to_scrap:
-      yield response.follow(next_link, callback=self.parse_only_titles, cb_kwargs={'titles': titles})
-    else:
-      yield {
-        'el_comercio': titles
-      }
-    
+    if self.counter < self.pages_to_scrap:
+      yield response.follow(next_link, callback=self.parse)
+
+  def parse_full_new(self, response, **kwargs):
+    link = kwargs["url"]
+    title = response.xpath(self.TITLE).get()
+    paragraphs_raw = response.xpath(self.PARAGRAPHS).getall()
+
+    body = []
+
+    for paragraph in paragraphs_raw:
+      output = w3lib.html.remove_tags(paragraph)
+      body.append(output)
+
+    yield {
+      'url': link,
+      'title': title,
+      'body': body
+    }
