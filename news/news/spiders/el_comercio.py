@@ -18,10 +18,14 @@ class ElComercioSpider(scrapy.Spider):
 
   LINKS = '//section[@class="content"]//h3[@class="list-item__title"]/a/@href'
   TITLE = '//header/h1[@class="entry__title"]/text()'
+  VIDEO_TITLE = '//h1[@class="entry__title"]/text()'
   PARAGRAPHS = '//div[@class="entry__content"]//p'
+  VIDEO_DESCRIPTION = '//p[contains(@class, "entry__description")]/text()'
+  TIME = '//div[contains(@class, "entry__date")]/time/text()'
+  VIDEO_TIME = '//div[contains(@class, "entry__meta")]//time/text()'
   NEXT_PAGE = '//footer/a[contains(@class, "next")]/@href'
   
-  pages_to_scrap = 3
+  pages_to_scrap = 5
   counter = 0
 
   def parse(self, response):
@@ -39,16 +43,40 @@ class ElComercioSpider(scrapy.Spider):
   def parse_full_new(self, response, **kwargs):
     link = kwargs["url"]
     title = response.xpath(self.TITLE).get()
-    paragraphs_raw = response.xpath(self.PARAGRAPHS).getall()
 
-    body = []
+    if (title):
+      # Is a "normal" new 
+      paragraphs_raw = response.xpath(self.PARAGRAPHS).getall()
+      time = response.xpath(self.TIME).get().strip()
 
-    for paragraph in paragraphs_raw:
-      output = w3lib.html.remove_tags(paragraph)
-      body.append(output)
 
-    yield {
-      'url': link,
-      'title': title,
-      'body': body
-    }
+
+      body = []
+
+      for paragraph in paragraphs_raw:
+        output = w3lib.html.remove_tags(paragraph)
+        body.append(output)
+
+      yield {
+        'url': link,
+        'title': title,
+        'time': time,
+        'body': body,
+      }
+
+    else:
+      # Is a video type new
+      title = response.xpath(self.VIDEO_TITLE).get()
+      paragraph = response.xpath(self.VIDEO_DESCRIPTION).get()
+      body = [paragraph]
+      time = response.xpath(self.VIDEO_TIME).get()
+
+      yield {
+        'url': link,
+        'title': title,
+        'time': time,
+        'body': body,
+      }
+
+    
+
