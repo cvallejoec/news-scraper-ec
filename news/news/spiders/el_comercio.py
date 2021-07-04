@@ -23,6 +23,7 @@ class ElComercioSpider(scrapy.Spider):
   VIDEO_DESCRIPTION = '//p[contains(@class, "entry__description")]/text()'
   TIME = '//div[contains(@class, "entry__date")]/time/text()'
   VIDEO_TIME = '//div[contains(@class, "entry__meta")]//time/text()'
+  CATEGORY = '//nav//li[contains(@class, "text-uppercase")]//b/text()'
   NEXT_PAGE = '//footer/a[contains(@class, "next")]/@href'
   
   pages_to_scrap = 5
