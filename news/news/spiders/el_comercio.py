@@ -48,8 +48,7 @@ class ElComercioSpider(scrapy.Spider):
       # Is a "normal" new 
       paragraphs_raw = response.xpath(self.PARAGRAPHS).getall()
       time = response.xpath(self.TIME).get().strip()
-
-
+      category = response.xpath(self.CATEGORY).get()
 
       body = []
 
@@ -61,6 +60,7 @@ class ElComercioSpider(scrapy.Spider):
         'url': link,
         'title': title,
         'time': time,
+        'category': category,
         'body': body,
       }
 
@@ -75,6 +75,7 @@ class ElComercioSpider(scrapy.Spider):
         'url': link,
         'title': title,
         'time': time,
+        'category': 'Video',
         'body': body,
       }
 
