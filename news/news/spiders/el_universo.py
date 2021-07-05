@@ -2,12 +2,12 @@ import scrapy
 import w3lib.html
 
 class ElComercioSpider(scrapy.Spider):
-  name = "la_hora"
+  name = "el_universo"
   start_urls = [
-    'https://www.lahora.com.ec/categoria/pais/'
+    'https://www.eluniverso.com/'
   ]
   custom_settings = {
-    # 'FEED_URI': 'la-hora.json',
+    # 'FEED_URI': 'el-universo.json',
     # 'FEED_FORMAT': 'json',
     'MEMUSAGE_NOTIFY_MAIL': [
       'cvallejo.ec@gmail.com'
@@ -16,15 +16,12 @@ class ElComercioSpider(scrapy.Spider):
     'FEED_EXPORT_ENCODING': 'utf-8',
   }
 
-  LINKS = '//div[contains(@class, "tdb-category-loop-posts")]//div[contains(@class, "td-module-container")]//h3[contains(@class, "entry-title")]//a/@href'
-  TITLE = '//div[@class="wpb_wrapper"]//h1[@class="tdb-title-text"]/text()'
-  PARAGRAPHS = '//div[@class="vc_column-inner"]//div[@class="tdb-block-inner td-fix-index"]/p'
-  TIME = '//div[contains(@class, "tdb-block-inner")]/time/text()'
-  NEXT_PAGE = '//div[contains(@class, "page-nav")]//a[last()]/@href'
+  LINKS = '//h2[contains(@class, "text-base")]/a/@href'
+  TITLE = '//div[contains(@class, "chain")]/h1/text()'
+  PARAGRAPHS = '//div[contains(@class, "chain")]//section[contains(@class, "article-body")]/p/text()'
+  TIME = '//p[contains(@class, "date")]/time/text()'
+  CATEGORY = '//div[contains(@class, "overline")]//a/text()'
   
-  pages_to_scrap = 5
-  counter = 0
-
   def parse(self, response):
     self.counter += 1
 
@@ -33,17 +30,13 @@ class ElComercioSpider(scrapy.Spider):
     for link in news_links:
       yield response.follow(link, callback=self.parse_full_new, cb_kwargs={ 'url': link })
 
-    next_link = response.xpath(self.NEXT_PAGE).get()
-    if self.counter < self.pages_to_scrap:
-      yield response.follow(next_link, callback=self.parse)
-
   def parse_full_new(self, response, **kwargs):
     link = kwargs["url"]
     title = response.xpath(self.TITLE).get()
 
     paragraphs_raw = response.xpath(self.PARAGRAPHS).getall()
     time = response.xpath(self.TIME).get().strip()
-    category = "Pais"
+    category = response.xpath(self.CATEGORY).get()
 
     body = []
 
@@ -52,7 +45,7 @@ class ElComercioSpider(scrapy.Spider):
       body.append(output)
 
     yield {
-      'url': link,
+      'url': 'https://eluniverso.com' + link,
       'title': title,
       'time': time,
       'category': category,
