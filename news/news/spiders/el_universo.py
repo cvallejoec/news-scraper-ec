@@ -23,8 +23,6 @@ class ElComercioSpider(scrapy.Spider):
   CATEGORY = '//div[contains(@class, "overline")]//a/text()'
   
   def parse(self, response):
-    self.counter += 1
-
     news_links = response.xpath(self.LINKS).getall()
 
     for link in news_links:

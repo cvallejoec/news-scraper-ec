@@ -2,12 +2,12 @@ import scrapy
 import w3lib.html
 
 class ElComercioSpider(scrapy.Spider):
-  name = "el_telegrafo_actualidad"
+  name = "el_telegrafo_empresariales"
   start_urls = [
-    'https://www.eltelegrafo.com.ec/contenido/categoria/44/actualidad'
+    'https://www.eltelegrafo.com.ec/contenido/categoria/172/empresariales'
   ]
   custom_settings = {
-    # 'FEED_URI': 'el-telegrafo-actualidad.json',
+    # 'FEED_URI': 'el-telegrafo-empresariales.json',
     # 'FEED_FORMAT': 'json',
     'MEMUSAGE_NOTIFY_MAIL': [
       'cvallejo.ec@gmail.com'
@@ -35,7 +35,7 @@ class ElComercioSpider(scrapy.Spider):
     time_raw = response.xpath(self.TIME).getall()
     time = time_raw[0].strip() + ' ' + time_raw[1].strip()
 
-    category = "Actualidad"
+    category = "Empresariales"
 
     body = []
 
